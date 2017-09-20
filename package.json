@@ -1,0 +1,15 @@
+{
+  "name": "kimono-minify",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "http://localhost/",
+  "main": "./start.js",
+  "scripts": {
+    "start": "node start"
+  },
+  "dependencies": {
+    "colors": "^1.1.2",
+    "jsonfile": "^3.0.1",
+    "node-minify": "^2.1.1"
+  }
+}
