@@ -64,15 +64,23 @@ module.exports = {
         return this.config.mindestdir + src.replace(/..\/data/g, "");
     },
 
-    deleteFolderRecursive: deleteFolderRecursive,
+    deleteFolderRecursive: function (path, keepTop) {
+        var kt = typeof(keepTop)!=='undefined'
+        if( fs.existsSync(path) ) {
+            fs.readdirSync(path).forEach(function(file,index){
+                var curPath = path + "/" + file;
+                if(fs.lstatSync(curPath).isDirectory()) { // recurse
+                    deleteFolderRecursive(curPath);
+                } else { // delete file
+                    fs.unlinkSync(curPath);
+                }
+            });
+            if ( !(keepTop && this.config.mindestdir == path))
+                fs.rmdirSync(path);
+        }
+    },
 
     isNew: function isNew(filepath, time){
-        //console.log(typeof (time), time, time.toString(), time.toString() == '2017-07-19T07:25:40.662Z')
-        //console.log('Is new', filepath, time, filetime && filetime[filepath], time+'' > (filetime && filetime[filepath] || '')+'', filetime && filetime[filepath] || '')
-        //console.log('2017-07-19T07:25:40.662Z' > '2017-06-09T04:20:44.459Z')
-        //filepath = '../data/wordpress/wp-includes/js/wp-ajax-response.js'
-        //console.log('OK',filetime[filepath], time)
-
         return time > (fileTime && fileTime[filepath] || '')
     },
     isFileChanged: function (filepath, time){
@@ -88,13 +96,10 @@ module.exports = {
             var depend = fileTime['depend'][mainFilepath]
             for (var key in depend) {
                 if (depend.hasOwnProperty(key)) {
-
-                    if (this.isFileChanged(key, depend[key])){
-                        // console.log(6666666666, key, depend[key])
-                        return true
-                    }
+                    return (this.isFileChanged(key, depend[key]))
                 }
             }
+
         }else{
             return true
         }
@@ -114,14 +119,14 @@ module.exports = {
     },
     save: function (){
         var jsonfile = require('jsonfile')
-
-        var file = this.config.mindestdir+'/filetime.json'
-        // console.log(7777777777,filetime)
+        console.log(11111111,this.config.mindestdir)
+        var file = this.config.mindestdir + '/filetime.json'
+        
+        this.ensureDirectoryExistence(file)
         jsonfile.writeFileSync(file, fileTime, {spaces: 2})
     },
     updTime: function (filepath, time){
       fileTime[filepath] = time
-        // console.log(filetime)
     },
     updTimeDepend: function (parentpath, filepath){
         if (!fileTime['depend']) fileTime['depend'] = {}
@@ -151,9 +156,9 @@ module.exports = {
 
     config: {
         // source dir: will be scanned to find css,js
-        datadir: "..\/data",
+        datadir: ".\/html",
         // destinate dir
-        mindestdir: './dist',
+        mindestdir: './html/min',
         // excluding dirs - would not be scanned
         excludeDirs: (isWin?/data\\(min|uploads|(wordpress\\wp-content\\uploads)|(wordpress\\wp-admin))/:/data\/(min|uploads|(wordpress\/wp-content\/uploads)|(wordpress\/wp-admin))/),
         // for js 
@@ -189,20 +194,5 @@ module.exports = {
 
 }
 
-function deleteFolderRecursive (path, keepTop) {
-    kt = typeof(keepTop)!=='undefined'
-    if( fs.existsSync(path) ) {
-        fs.readdirSync(path).forEach(function(file,index){
-            var curPath = path + "/" + file;
-            if(fs.lstatSync(curPath).isDirectory()) { // recurse
-                deleteFolderRecursive(curPath);
-            } else { // delete file
-                fs.unlinkSync(curPath);
-            }
-        });
-        if ( !(keepTop && this.config.mindestdir == path))
-            fs.rmdirSync(path);
-    }
-}
 
 
