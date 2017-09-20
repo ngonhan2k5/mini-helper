@@ -3,6 +3,7 @@
  */
 
 var com = require('./common')
+com.load()
 
 var arg = process.argv && (process.argv.length >=2) && process.argv[2] || 'mini'
 arg = arg == 'debug'?'mini':arg
@@ -15,17 +16,14 @@ switch (arg){
             require('./minjs')
         break;
     case 'mini':
-        // require('./minjs')
+        require('./minjs')
         require('./mincss')
-
         break
     case 'clean':
         console.log ('Clean all: ' , com.config.mindestdir)
         com.deleteFolderRecursive(com.config.mindestdir, 1)
         break;
-    case 'new':
-        com.isNew('aa')
-        break;
+
 }
 
 process.on('exit', function () {
